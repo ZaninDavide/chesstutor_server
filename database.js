@@ -49,7 +49,7 @@ function collectionToHandler(collection) {
           if (err) reject(err)
           resolve(result)
         })
-      })
+      }),
   }
 }
 

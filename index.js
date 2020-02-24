@@ -19,7 +19,7 @@ async function main() {
     const SALT_ROUNDS = 10
     const SECRET = process.env.SECRET
 
-    app.get("/", (req, res) => res.send("Hello World!"))
+    app.get("/", (req, res) => res.send("ChessUp server active!"))
 
     app.post("/signup", async (req, res) => {
         if (!req.body.email || !req.body.password) {
@@ -52,6 +52,7 @@ async function main() {
 
         const token = jwt.sign(
             {
+                iat: +new Date(),
                 tokenType: "LOGIN",
                 userId: insertedId,
             },
@@ -83,6 +84,7 @@ async function main() {
 
         const token = jwt.sign(
             {
+                iat: +new Date(),
                 tokenType: "LOGIN",
                 userId: userFound._id,
             },
@@ -121,6 +123,7 @@ async function main() {
             })
         )
     })
+
     app.post("/user", checkAuthorization, async (req, res) => {
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
@@ -129,8 +132,134 @@ async function main() {
         res.send("Ok")
     })
 
+    // ADD OPENING
+
+    app.post("/addOpening", checkAuthorization, async (req, res) => {
+        // req.body is the opening json object
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $push: {user_ops: req.body} }
+        )
+        res.send("Ok")
+    })
+
+    // DELETE OPENING
+
+    app.post("/deleteOpening/:op_index", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+         // make the opening element become null
+        let op_search = "user_ops." + op_index.toString()
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $unset: {[op_search]: 1} }
+        )
+        // remove all null objects in the user_ops array
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $pull: {user_ops: null}}
+        )
+        res.send("Ok")
+    })
+
+    // RENAME OPENING
+
+    app.post("/renameOpening/:op_index", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+        let name_search = "user_ops." + op_index.toString() + ".op_name"
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $set: {[name_search]: req.body.new_name} }
+        )
+        res.send("Ok")
+    })
+
+    // SET OPENING ARCHIVED (or not archived)
+
+    app.post("/setOpeningArchived/:op_index", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+        let archived_search = "user_ops." + op_index.toString() + ".archived"
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $set: {[archived_search]: req.body.archived} }
+        )
+        res.send("Ok")
+    })
+
+    // ADD VARIATION
+
+    app.post("/addVariation/:op_index", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+        let archived_search = "user_ops." + op_index.toString() + ".variations"
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $push: {[archived_search]: req.body} }
+        )
+        res.send("Ok")
+    })
+
+    // SET VARIATION ARCHIVED (or not archived)
+
+    app.post("/setVariationArchived/:op_index/:vari_index", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+        let vari_index = req.params.vari_index
+        let archived_search = "user_ops." + op_index.toString() + ".variations." + vari_index + ".archived"
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $set: {[archived_search]: req.body.archived} }
+        )
+        res.send("Ok")
+    })
+
+    // RENAME VARIATION
+
+    app.post("/renameVariation/:op_index/:vari_index", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+        let vari_index = req.params.vari_index
+        let name_search = "user_ops." + op_index.toString() + ".variations." + vari_index + ".vari_name"
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $set: {[name_search]: req.body.new_name} }
+        )
+        res.send("Ok")
+    })
+
+    // DELETE VARIATION
+
+    app.post("/deletevariation/:op_index/:vari_index", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+        let vari_index = req.params.vari_index
+         // make the variation element become null
+        let vari_search = "user_ops." + op_index.toString() + ".variations." + vari_index
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $unset: {[vari_search]: 1} }
+        )
+        // remove all null objects in the variations array
+        let variations_search = "user_ops." + op_index.toString() + ".variations"
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $pull: {[variations_search]: null}}
+        )
+        res.send("Ok")
+    })
+
+    // EDIT COMMENT
+
+    app.post("/editComment/:op_index/:comment_name", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+        let comment_name = req.params.comment_name
+        let comment_search = "user_ops." + op_index.toString() + ".comments." + comment_name
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $set: {[comment_search]: req.body.text} }
+        )
+        res.send("Ok")
+    })
+
+    // LISTEN TO PORT
+
     app.listen(PORT, () =>
-        console.log(`Example app listening on port ${PORT}!`)
+        console.log(`ChessUp server listening on port ${PORT}!`)
     )
 }
 
