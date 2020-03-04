@@ -248,10 +248,23 @@ async function main() {
     app.post("/editComment/:op_index/:comment_name", checkAuthorization, async (req, res) => {
         let op_index = req.params.op_index
         let comment_name = req.params.comment_name
-        let comment_search = "user_ops." + op_index.toString() + ".comments." + comment_name
+        let comment_search = "user_ops." + op_index.toString() + ".comments." + comment_name.toString()
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
             { $set: {[comment_search]: req.body.text} }
+        )
+        res.send("Ok")
+    })
+
+    // UPDATE DRAW BOARD ON PDF
+
+    app.post("/setDrawBoardPDF/:op_index/:move_name", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+        let move_name = req.params.move_name
+        let moveDraw_search = "user_ops." + op_index.toString() + ".pdfBoards." + move_name.toString()
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $set: {[moveDraw_search]: req.body.value} }
         )
         res.send("Ok")
     })
