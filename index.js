@@ -223,6 +223,19 @@ async function main() {
         res.send("Ok")
     })
 
+    // SUBNAME VARIATION
+
+    app.post("/setVariationSubname/:op_index/:vari_index", checkAuthorization, async (req, res) => {
+        let op_index = req.params.op_index
+        let vari_index = req.params.vari_index
+        let name_search = "user_ops." + op_index.toString() + ".variations." + vari_index + ".vari_subname"
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $set: {[name_search]: req.body.new_subname} }
+        )
+        res.send("Ok")
+    })
+
     // DELETE VARIATION
 
     app.post("/deletevariation/:op_index/:vari_index", checkAuthorization, async (req, res) => {
