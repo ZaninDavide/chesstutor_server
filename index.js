@@ -300,6 +300,24 @@ async function main() {
         res.send("Ok")
     })
 
+    // DELETE MAIL FROM INBOX
+
+    app.post("/deleteMail/:mail_index", checkAuthorization, async (req, res) => {
+        let mail_index = req.params.mail_index
+         // make the opening element become null
+        let op_search = "inbox." + mail_index.toString()
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $unset: {[op_search]: 1} }
+        )
+        // remove all null objects in the user_ops array
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $pull: {inbox: null}}
+        )
+        res.send("Ok")
+    })
+
     // LISTEN TO PORT
 
     app.listen(PORT, () =>
