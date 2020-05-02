@@ -282,6 +282,24 @@ async function main() {
         res.send("Ok")
     })
 
+    // SEND OPENING TO INBOX
+
+    app.post("/sendOpening", checkAuthorization, async (req, res) => {
+        let op = req.body.op
+        op.creator_email = (await User.findOne({ _id: ObjectID(req.auth.userId) })).email
+
+        req.body.emails.forEach(async to_email => {
+            const userFound = await User.findOne({ email: to_email })
+            if(userFound){
+                await User.updateOne(
+                    { email: to_email },
+                    { $push: {inbox: op} }
+                )
+            }
+        });
+        res.send("Ok")
+    })
+
     // LISTEN TO PORT
 
     app.listen(PORT, () =>
