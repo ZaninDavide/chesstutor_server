@@ -318,6 +318,18 @@ async function main() {
         res.send("Ok")
     })
 
+    // SET LANGUAGE
+
+    app.post("/setLanguage", checkAuthorization, async (req, res) => {
+        const lang = req.body.lang
+        let lang_search = "language"
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $set: {[lang_search]: lang} }
+        )
+        res.send("Ok")
+    })
+
     // LISTEN TO PORT
 
     app.listen(PORT, () =>
