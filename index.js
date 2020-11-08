@@ -32,7 +32,7 @@ async function main() {
         if (passwordCheck.score <= 2) {
             res.status(400).send(
                 "Weak password - " +
-                    passwordCheck.feedback.suggestions.join(", ")
+                passwordCheck.feedback.suggestions.join(", ")
             )
             return
         }
@@ -138,7 +138,7 @@ async function main() {
         // req.body is the opening json object
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $push: {user_ops: req.body} }
+            { $push: { user_ops: req.body } }
         )
         res.send("Ok")
     })
@@ -147,16 +147,16 @@ async function main() {
 
     app.post("/deleteOpening/:op_index", checkAuthorization, async (req, res) => {
         let op_index = req.params.op_index
-         // make the opening element become null
+        // make the opening element become null
         let op_search = "user_ops." + op_index.toString()
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $unset: {[op_search]: 1} }
+            { $unset: { [op_search]: 1 } }
         )
         // remove all null objects in the user_ops array
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $pull: {user_ops: null}}
+            { $pull: { user_ops: null } }
         )
         res.send("Ok")
     })
@@ -168,7 +168,7 @@ async function main() {
         let name_search = "user_ops." + op_index.toString() + ".op_name"
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $set: {[name_search]: req.body.new_name} }
+            { $set: { [name_search]: req.body.new_name } }
         )
         res.send("Ok")
     })
@@ -180,7 +180,7 @@ async function main() {
         let archived_search = "user_ops." + op_index.toString() + ".archived"
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $set: {[archived_search]: req.body.archived} }
+            { $set: { [archived_search]: req.body.archived } }
         )
         res.send("Ok")
     })
@@ -192,7 +192,7 @@ async function main() {
         let archived_search = "user_ops." + op_index.toString() + ".variations"
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $push: {[archived_search]: req.body} }
+            { $push: { [archived_search]: req.body } }
         )
         res.send("Ok")
     })
@@ -205,7 +205,7 @@ async function main() {
         let archived_search = "user_ops." + op_index.toString() + ".variations." + vari_index + ".archived"
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $set: {[archived_search]: req.body.archived} }
+            { $set: { [archived_search]: req.body.archived } }
         )
         res.send("Ok")
     })
@@ -218,7 +218,7 @@ async function main() {
         let name_search = "user_ops." + op_index.toString() + ".variations." + vari_index + ".vari_name"
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $set: {[name_search]: req.body.new_name} }
+            { $set: { [name_search]: req.body.new_name } }
         )
         res.send("Ok")
     })
@@ -231,7 +231,7 @@ async function main() {
         let name_search = "user_ops." + op_index.toString() + ".variations." + vari_index + ".vari_subname"
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $set: {[name_search]: req.body.new_subname} }
+            { $set: { [name_search]: req.body.new_subname } }
         )
         res.send("Ok")
     })
@@ -241,17 +241,17 @@ async function main() {
     app.post("/deletevariation/:op_index/:vari_index", checkAuthorization, async (req, res) => {
         let op_index = req.params.op_index
         let vari_index = req.params.vari_index
-         // make the variation element become null
+        // make the variation element become null
         let vari_search = "user_ops." + op_index.toString() + ".variations." + vari_index
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $unset: {[vari_search]: 1} }
+            { $unset: { [vari_search]: 1 } }
         )
         // remove all null objects in the variations array
         let variations_search = "user_ops." + op_index.toString() + ".variations"
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $pull: {[variations_search]: null}}
+            { $pull: { [variations_search]: null } }
         )
         res.send("Ok")
     })
@@ -264,7 +264,7 @@ async function main() {
         let comment_search = "user_ops." + op_index.toString() + ".comments." + comment_name.toString()
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $set: {[comment_search]: req.body.text} }
+            { $set: { [comment_search]: req.body.text } }
         )
         res.send("Ok")
     })
@@ -277,7 +277,7 @@ async function main() {
         let moveDraw_search = "user_ops." + op_index.toString() + ".pdfBoards." + move_name.toString()
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $set: {[moveDraw_search]: req.body.value} }
+            { $set: { [moveDraw_search]: req.body.value } }
         )
         res.send("Ok")
     })
@@ -290,10 +290,10 @@ async function main() {
 
         req.body.emails.forEach(async to_email => {
             const userFound = await User.findOne({ email: to_email })
-            if(userFound){
+            if (userFound) {
                 await User.updateOne(
                     { email: to_email },
-                    { $push: {inbox: op} }
+                    { $push: { inbox: op } }
                 )
             }
         });
@@ -304,16 +304,16 @@ async function main() {
 
     app.post("/deleteMail/:mail_index", checkAuthorization, async (req, res) => {
         let mail_index = req.params.mail_index
-         // make the opening element become null
+        // make the opening element become null
         let op_search = "inbox." + mail_index.toString()
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $unset: {[op_search]: 1} }
+            { $unset: { [op_search]: 1 } }
         )
         // remove all null objects in the user_ops array
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $pull: {inbox: null}}
+            { $pull: { inbox: null } }
         )
         res.send("Ok")
     })
@@ -325,7 +325,20 @@ async function main() {
         let lang_search = "language"
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
-            { $set: {[lang_search]: lang} }
+            { $set: { [lang_search]: lang } }
+        )
+        res.send("Ok")
+    })
+
+    // SET A SETTING
+
+    app.post("/setSetting/:setting_name", checkAuthorization, async (req, res) => {
+        const setting_name = req.params.setting_name
+        const setting_value = req.body.setting_value
+        let setting_search = "settings." + setting_name
+        await User.updateOne(
+            { _id: ObjectID(req.auth.userId) },
+            { $set: { [setting_search]: setting_value } }
         )
         res.send("Ok")
     })
