@@ -343,6 +343,35 @@ async function main() {
         res.send("Ok")
     })
 
+    // RENAME VARIATION GROUP
+
+    app.post("/renameVariationGroup", checkAuthorization, async (req, res) => {
+        const op_index = req.body.op_index
+        const vari_group_name = req.body.vari_group_name
+        const vari_group_new_name = req.body.vari_group_new_name
+
+        const userFound = await User.findOne({ _id: ObjectID(req.auth.userId) })
+
+        if(userFound){
+            let varis = userFound.user_ops[op_index].variations
+    
+            varis.forEach(async (v, vari_index) => { 
+                if(v.vari_name === vari_group_name){
+                    let name_search = "user_ops." + op_index.toString() + ".variations." + vari_index + ".vari_name"
+                    await User.updateOne(
+                        { _id: ObjectID(req.auth.userId) },
+                        { $set: { [name_search]: vari_group_new_name } }
+                    )
+                }
+            })
+
+            res.send("Ok")
+        }else{
+            res.status(400).send("Impossible to find this user")
+        }
+
+    })
+
     // LISTEN TO PORT
 
     app.listen(PORT, () =>
