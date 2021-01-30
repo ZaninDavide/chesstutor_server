@@ -124,6 +124,15 @@ async function main() {
         )
     })
 
+    app.get("/inbox", checkAuthorization, async (req, res) => {
+        const userFound = await User.findOne({ _id: ObjectID(req.auth.userId) })
+        res.send(
+            JSON.stringify({
+                inbox: userFound.inbox
+            })
+        )
+    })
+
     app.post("/user", checkAuthorization, async (req, res) => {
         await User.updateOne(
             { _id: ObjectID(req.auth.userId) },
@@ -361,6 +370,41 @@ async function main() {
                     await User.updateOne(
                         { _id: ObjectID(req.auth.userId) },
                         { $set: { [name_search]: vari_group_new_name } }
+                    )
+                }
+            })
+
+            res.send("Ok")
+        }else{
+            res.status(400).send("Impossible to find this user")
+        }
+
+    })
+
+    // DELETE VARIATION GROUP
+
+    app.post("/deleteVariationGroup", checkAuthorization, async (req, res) => {
+        const op_index = req.body.op_index
+        const vari_group_name = req.body.vari_group_name
+
+        const userFound = await User.findOne({ _id: ObjectID(req.auth.userId) })
+
+        if(userFound){
+            let varis = userFound.user_ops[op_index].variations
+    
+            varis.forEach(async (v, vari_index) => { 
+                if(v.vari_name === vari_group_name){
+                    // make the variation element become null
+                    let vari_search = "user_ops." + op_index.toString() + ".variations." + vari_index
+                    await User.updateOne(
+                        { _id: ObjectID(req.auth.userId) },
+                        { $unset: { [vari_search]: 1 } }
+                    )
+                    // remove all null objects in the variations array
+                    let variations_search = "user_ops." + op_index.toString() + ".variations"
+                    await User.updateOne(
+                        { _id: ObjectID(req.auth.userId) },
+                        { $pull: { [variations_search]: null } }
                     )
                 }
             })
